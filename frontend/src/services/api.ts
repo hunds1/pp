@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-// Пока бэкенд не доступен
-// const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
-// export const api = axios.create({
-//   baseURL: API_BASE_URL,
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export enum AgentType {
   FAQ = "faq",
@@ -75,76 +74,33 @@ let mockAgents: Agent[] = [
   }
 ];
 
-// Временные моковые функции пока нет доступа к бэкенду
+
+// Функции для работы с API
 export const agentAPI = {
   getAgents: (): Promise<Agent[]> => {
-    console.log('📦 Получаем список агентов (мок)');
-    return Promise.resolve([...mockAgents]); // возвращаем копию массива
+    return api.get<Agent[]>('/agents').then(res => res.data);
   },
   
   getAgent: (id: number): Promise<Agent> => {
-    const agent = mockAgents.find(a => a.id === id);
-    if (agent) {
-      return Promise.resolve({...agent}); // возвращаем копию объекта
-    }
-    return Promise.reject('Agent not found');
+    return api.get<Agent>(`/agents/${id}`).then(res => res.data);
   },
   
   createAgent: (agentData: AgentCreate): Promise<Agent> => {
-    console.log('🆕 Создаем агента:', agentData);
-    
-    // Имитируем небольшую задержку как при реальном запросе
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newAgent: Agent = {
-          ...agentData,
-          id: Math.max(0, ...mockAgents.map(a => a.id)) + 1,
-          status: AgentStatus.CREATED,
-        };
-        mockAgents = [...mockAgents, newAgent]; // создаем новый массив
-        console.log('✅ Агент создан:', newAgent);
-        resolve(newAgent);
-      }, 500);
-    });
+    return api.post<Agent>('/agents', agentData).then(res => res.data);
   },
   
   deleteAgent: (id: number): Promise<void> => {
-    mockAgents = mockAgents.filter(a => a.id !== id);
-    return Promise.resolve();
+    return api.delete(`/agents/${id}`).then(() => {});
   },
   
   trainAgent: (id: number): Promise<void> => {
-    return new Promise((resolve) => {
-      const agent = mockAgents.find(a => a.id === id);
-      if (agent) {
-        agent.status = AgentStatus.TRAINING;
-        // Имитируем обучение
-        setTimeout(() => {
-          agent.status = AgentStatus.READY;
-          console.log(`✅ Агент ${id} обучен`);
-        }, 2000);
-      }
-      resolve();
-    });
+    return api.post(`/agents/${id}/train`).then(() => {});
   },
   
   sendMessage: (id: number, message: MessageRequest): Promise<MessageResponse> => {
-    return Promise.resolve({
-      response: [`Это тестовый ответ от агента ${id} на сообщение: "${message.message}"`],
-      agent_id: id,
-      intent: 'test_intent',
-      entities: []
-    });
+    return api.post<MessageResponse>(`/agents/${id}/message`, message).then(res => res.data);
   },
 };
-
-// Временный мок для healthCheck
-export const healthCheck = (): Promise<{ status: string }> => 
-  Promise.resolve({ status: 'ok' });
-
-// Временный мок для api если где-то используется
-export const api = {
-  get: () => Promise.resolve({ data: [] }),
-  post: () => Promise.resolve({ data: {} }),
-  delete: () => Promise.resolve({}),
-};
+// Функция для проверки состояния API
+export const healthCheck = (): Promise<{ status: string }> =>
+  api.get('/health').then(res => res.data);
