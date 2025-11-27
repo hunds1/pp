@@ -60,6 +60,14 @@
   word-break: break-word;
 }
 
+.example-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+}
+
 .intents-list {
   margin-top: 2rem;
 }
@@ -140,4 +148,11 @@
   color: #d32f2f;
   background: #ffebee;
   border-radius: 8px;
+}
+
+.validation-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 10px;
+  font-style: italic;
 }

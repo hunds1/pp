@@ -71,7 +71,10 @@ const MainChatInterface: React.FC = () => {
               >
                 Добавить агента
               </button>
-              <button className="btn btn-secondary btn-block">
+              <button
+                className="btn btn-secondary btn-block"
+                onClick={() => navigate('/create-entity')}
+              >
                 Добавить сущность
               </button>
             </div>

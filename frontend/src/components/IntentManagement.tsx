@@ -62,7 +62,7 @@ const IntentManagement: React.FC<IntentManagementProps> = ({ agentId }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.examples || formData.examples.length === 0) return;
+    if (!formData.name || !formData.examples || formData.examples.length < 3) return;
     
     const intentData: IntentCreate = {
       name: formData.name,
@@ -184,9 +184,18 @@ const IntentManagement: React.FC<IntentManagementProps> = ({ agentId }) => {
                   <div className="examples-list">
                     {formData.examples.map((example, index) => (
                       <div key={index} className="example-item">
-                        <span>{example}</span>
-                        <button 
-                          type="button" 
+                        <input
+                          type="text"
+                          value={example}
+                          onChange={(e) => {
+                            const newExamples = [...formData.examples!];
+                            newExamples[index] = e.target.value;
+                            setFormData({...formData, examples: newExamples});
+                          }}
+                          className="example-input"
+                        />
+                        <button
+                          type="button"
                           className="btn btn-danger btn-small"
                           onClick={() => removeExample(index)}
                         >
@@ -196,6 +205,11 @@ const IntentManagement: React.FC<IntentManagementProps> = ({ agentId }) => {
                     ))}
                   </div>
                 )}
+                {formData.examples && formData.examples.length < 3 && (
+                  <div className="validation-message">
+                    Необходимо добавить минимум {3 - formData.examples.length} пример(а) фраз
+                  </div>
+                )}
               </div>
             </div>
             
@@ -203,7 +217,7 @@ const IntentManagement: React.FC<IntentManagementProps> = ({ agentId }) => {
               <button 
                 type="submit" 
                 className="btn btn-primary"
-                disabled={!formData.name || !formData.examples || formData.examples.length === 0}
+                disabled={!formData.name || !formData.examples || formData.examples.length < 3}
               >
                 {editingIntent ? 'Сохранить' : 'Создать'}
               </button>

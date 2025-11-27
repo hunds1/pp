@@ -6,6 +6,7 @@ import AgentList from './components/AgentList';
 import CreateAgentForm from './components/CreateAgentForm';
 import AgentDashboard from './pages/AgentDashboard';
 import MainChatInterface from './pages/MainChatInterface';
+import CreateEntityForm from './components/CreateEntityForm';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ function App() {
                   </>
                 } />
                 <Route path="/agent/:id" element={<AgentDashboard />} />
+                <Route path="/create-entity" element={<CreateEntityForm />} />
               </Routes>
             </div>
           </main>
