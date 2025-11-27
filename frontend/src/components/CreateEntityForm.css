@@ -66,6 +66,41 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+.lookup-values-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lookup-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.lookup-input-group input {
+  flex: 1;
+}
+
+.lookup-values-list {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.lookup-value-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.lookup-value-item:last-child {
+  border-bottom: none;
+}
 }
 
 .value-input-group {

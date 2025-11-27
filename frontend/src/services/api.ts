@@ -57,6 +57,7 @@ export interface Entity {
   type: string;
   description?: string;
   regex_pattern?: string;
+  lookup_values?: string[];
 }
 
 export interface EntityCreate {
@@ -64,6 +65,7 @@ export interface EntityCreate {
   type: string;
   description?: string;
   regex_pattern?: string;
+  lookup_values?: string[];
 }
 
 // Интерфейсы для интентов

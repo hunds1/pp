@@ -1,15 +1,37 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { EntityCreate } from '../services/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { EntityCreate, agentAPI } from '../services/api';
 import './CreateEntityForm.css';
 
-const CreateEntityForm: React.FC = () => {
-  const navigate = useNavigate();
+interface CreateEntityFormProps {
+  agentId: number;
+  onBack: () => void;
+}
+
+const CreateEntityForm: React.FC<CreateEntityFormProps> = ({ agentId, onBack }) => {
+  const queryClient = useQueryClient();
+  
   const [name, setName] = useState('');
   const [type, setType] = useState<'lookup' | 'regex'>('lookup');
   const [values, setValues] = useState<string[]>(['']);
   const [regexPattern, setRegexPattern] = useState('');
   const [description, setDescription] = useState('');
+  
+  const mutation = useMutation({
+    mutationFn: (entityData: EntityCreate) => agentAPI.createEntity(agentId, entityData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entities', agentId] });
+      // Очистка формы
+      setName('');
+      setType('lookup');
+      setValues(['']);
+      setRegexPattern('');
+      setDescription('');
+    },
+    onError: (error) => {
+      console.error('Ошибка создания сущности:', error);
+    }
+  });
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,19 +57,11 @@ const CreateEntityForm: React.FC = () => {
       name: name.trim(),
       type: type,
       description: description.trim(),
-      ...(type === 'regex' && { regex_pattern: regexPattern.trim() })
+      ...(type === 'regex' && { regex_pattern: regexPattern.trim() }),
+      ...(type === 'lookup' && { lookup_values: values.filter(v => v.trim() !== '') })
     };
     
-    // В реальной реализации здесь будет вызов API
-    console.log('Создание сущности:', entityData);
-    alert('Сущность успешно создана!');
-    
-    // Очистка формы
-    setName('');
-    setType('lookup');
-    setValues(['']);
-    setRegexPattern('');
-    setDescription('');
+    mutation.mutate(entityData);
   };
   
   const addValue = () => {
@@ -74,7 +88,7 @@ const CreateEntityForm: React.FC = () => {
         <h2>Создать новую сущность</h2>
         <button 
           className="btn btn-secondary"
-          onClick={() => navigate('/')}
+          onClick={onBack}
         >
           Назад
         </button>
@@ -90,6 +104,7 @@ const CreateEntityForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            disabled={mutation.isPending}
           />
         </div>
         
@@ -99,6 +114,7 @@ const CreateEntityForm: React.FC = () => {
             id="entity-type"
             value={type}
             onChange={(e) => setType(e.target.value as 'lookup' | 'regex')}
+            disabled={mutation.isPending}
           >
             <option value="lookup">Lookup (список значений)</option>
             <option value="regex">Regex (регулярное выражение)</option>
@@ -116,12 +132,14 @@ const CreateEntityForm: React.FC = () => {
                     value={value}
                     onChange={(e) => updateValue(index, e.target.value)}
                     placeholder={`Значение ${index + 1}`}
+                    disabled={mutation.isPending}
                   />
                   {values.length > 1 && (
                     <button
                       type="button"
                       className="btn btn-danger btn-small"
                       onClick={() => removeValue(index)}
+                      disabled={mutation.isPending}
                     >
                       -
                     </button>
@@ -132,6 +150,7 @@ const CreateEntityForm: React.FC = () => {
                 type="button"
                 className="btn btn-secondary"
                 onClick={addValue}
+                disabled={mutation.isPending}
               >
                 + Добавить значение
               </button>
@@ -146,6 +165,7 @@ const CreateEntityForm: React.FC = () => {
               placeholder="Например: \b(красный|синий|зеленый)\b"
               value={regexPattern}
               onChange={(e) => setRegexPattern(e.target.value)}
+              disabled={mutation.isPending}
             />
             <small className="form-help">
               Регулярное выражение для извлечения сущности из текста
@@ -161,21 +181,39 @@ const CreateEntityForm: React.FC = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
+            disabled={mutation.isPending}
           />
         </div>
         
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary">
-            Создать сущность
+          <button 
+            type="submit" 
+            className="btn btn-primary"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? 'Создание...' : 'Создать сущность'}
           </button>
           <button 
             type="button" 
             className="btn btn-secondary"
-            onClick={() => navigate('/')}
+            onClick={onBack}
+            disabled={mutation.isPending}
           >
             Отмена
           </button>
         </div>
+        
+        {mutation.isError && (
+          <div className="error-message">
+            Ошибка при создании сущности. Убедитесь, что бэкенд запущен.
+          </div>
+        )}
+        
+        {mutation.isSuccess && (
+          <div className="success-message">
+            Сущность успешно создана!
+          </div>
+        )}
       </form>
     </div>
   );

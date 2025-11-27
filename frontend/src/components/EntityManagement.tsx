@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Entity, EntityCreate } from '../services/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Entity, EntityCreate, agentAPI } from '../services/api';
 import './EntityManagement.css';
 
 interface EntityManagementProps {
@@ -11,26 +12,55 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
   const [formData, setFormData] = useState<Partial<EntityCreate>>({
     name: '',
-    type: 'text',
+    type: 'lookup',
     description: '',
-    regex_pattern: ''
+    regex_pattern: '',
+    lookup_values: []
   });
-  const [entities, setEntities] = useState<Entity[]>([
-    {
-      id: 1,
-      name: "email",
-      type: "regex",
-      description: "Email адрес",
-      regex_pattern: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+  const [newLookupValue, setNewLookupValue] = useState('');
+  
+  const queryClient = useQueryClient();
+  
+  const { data: entities, isLoading, error, refetch } = useQuery({
+    queryKey: ['entities', agentId],
+    queryFn: () => agentAPI.getEntities(agentId),
+  });
+  
+  const createMutation = useMutation({
+    mutationFn: (entityData: EntityCreate) => agentAPI.createEntity(agentId, entityData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entities', agentId] });
+      resetForm();
+      setIsAdding(false);
     },
-    {
-      id: 2,
-      name: "phone",
-      type: "regex",
-      description: "Номер телефона",
-      regex_pattern: "\\+7\\d{10}"
+    onError: (error) => {
+      console.error('Ошибка создания сущности:', error);
     }
-  ]);
+  });
+  
+  const updateMutation = useMutation({
+    mutationFn: (params: { entityId: number, entityData: EntityCreate }) => 
+      agentAPI.updateEntity(agentId, params.entityId, params.entityData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entities', agentId] });
+      setEditingEntity(null);
+      resetForm();
+      setIsAdding(false);
+    },
+    onError: (error) => {
+      console.error('Ошибка обновления сущности:', error);
+    }
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: (entityId: number) => agentAPI.deleteEntity(agentId, entityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entities', agentId] });
+    },
+    onError: (error) => {
+      console.error('Ошибка удаления сущности:', error);
+    }
+  });
 
   useEffect(() => {
     if (editingEntity) {
@@ -38,7 +68,8 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
         name: editingEntity.name,
         type: editingEntity.type,
         description: editingEntity.description || '',
-        regex_pattern: editingEntity.regex_pattern || ''
+        regex_pattern: editingEntity.regex_pattern || '',
+        lookup_values: editingEntity.lookup_values || []
       });
     } else if (!isAdding) {
       resetForm();
@@ -48,10 +79,12 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
   const resetForm = () => {
     setFormData({
       name: '',
-      type: 'text',
+      type: 'lookup',
       description: '',
-      regex_pattern: ''
+      regex_pattern: '',
+      lookup_values: []
     });
+    setNewLookupValue('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,28 +96,15 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
       name: formData.name,
       type: formData.type,
       description: formData.description,
-      regex_pattern: formData.regex_pattern
+      regex_pattern: formData.regex_pattern,
+      lookup_values: formData.lookup_values
     };
     
     if (editingEntity) {
-      // Update existing entity
-      setEntities(entities.map(entity =>
-        entity.id === editingEntity.id
-          ? { ...entity, ...entityData }
-          : entity
-      ));
-      setEditingEntity(null);
+      updateMutation.mutate({ entityId: editingEntity.id, entityData });
     } else {
-      // Add new entity
-      const newEntity: Entity = {
-        id: Date.now(),
-        ...entityData
-      };
-      setEntities([...entities, newEntity]);
+      createMutation.mutate(entityData);
     }
-    
-    setIsAdding(false);
-    resetForm();
   };
 
   const handleEdit = (entity: Entity) => {
@@ -94,7 +114,7 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
 
   const handleDelete = (entityId: number, entityName: string) => {
     if (window.confirm(`Вы уверены, что хотите удалить сущность "${entityName}"?`)) {
-      setEntities(entities.filter(entity => entity.id !== entityId));
+      deleteMutation.mutate(entityId);
     }
   };
 
@@ -103,11 +123,40 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
     setEditingEntity(null);
     resetForm();
   };
+  
+  const addLookupValue = () => {
+    if (newLookupValue.trim()) {
+      setFormData({
+        ...formData,
+        lookup_values: [...(formData.lookup_values || []), newLookupValue.trim()]
+      });
+      setNewLookupValue('');
+    }
+  };
+  
+  const removeLookupValue = (index: number) => {
+    const newValues = [...(formData.lookup_values || [])];
+    newValues.splice(index, 1);
+    setFormData({...formData, lookup_values: newValues});
+  };
+
+  if (isLoading) return <div className="loading">Загрузка сущностей...</div>;
+  if (error) {
+    console.error('Ошибка загрузки сущностей:', error);
+    return (
+      <div className="error">
+        Не удалось загрузить сущности. Убедитесь, что бэкенд запущен на порту 8000
+      </div>
+    );
+  }
 
   return (
     <div className="entity-management">
       <div className="entity-header">
         <h2>Управление сущностями</h2>
+        <button onClick={() => refetch()} className="refresh-btn">
+          Обновить
+        </button>
         {!isAdding && (
           <button 
             className="btn btn-primary"
@@ -129,20 +178,20 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
                 value={formData.name || ''}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 required
+                disabled={createMutation.isPending || updateMutation.isPending}
               />
             </div>
             
             <div className="form-group">
               <label>Тип *</label>
               <select
-                value={formData.type || 'text'}
+                value={formData.type || 'lookup'}
                 onChange={(e) => setFormData({...formData, type: e.target.value})}
                 required
+                disabled={createMutation.isPending || updateMutation.isPending}
               >
-                <option value="text">Текст</option>
-                <option value="number">Число</option>
-                <option value="date">Дата</option>
-                <option value="regex">Регулярное выражение</option>
+                <option value="lookup">Lookup (список значений)</option>
+                <option value="regex">Regex (регулярное выражение)</option>
               </select>
             </div>
             
@@ -152,6 +201,7 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
                 value={formData.description || ''}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={3}
+                disabled={createMutation.isPending || updateMutation.isPending}
               />
             </div>
             
@@ -163,19 +213,80 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
                   value={formData.regex_pattern || ''}
                   onChange={(e) => setFormData({...formData, regex_pattern: e.target.value})}
                   placeholder="Например: \d{4}-\d{4}-\d{4}-\d{4}"
+                  disabled={createMutation.isPending || updateMutation.isPending}
                 />
               </div>
             )}
             
+            {formData.type === 'lookup' && (
+              <div className="form-group">
+                <label>Список возможных значений *</label>
+                <div className="lookup-values-input">
+                  <div className="lookup-input-group">
+                    <input
+                      type="text"
+                      value={newLookupValue}
+                      onChange={(e) => setNewLookupValue(e.target.value)}
+                      placeholder="Введите значение"
+                      disabled={createMutation.isPending || updateMutation.isPending}
+                    />
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={addLookupValue}
+                      disabled={createMutation.isPending || updateMutation.isPending}
+                    >
+                      Добавить
+                    </button>
+                  </div>
+                  
+                  {formData.lookup_values && formData.lookup_values.length > 0 && (
+                    <div className="lookup-values-list">
+                      {formData.lookup_values.map((value: string, index: number) => (
+                        <div key={index} className="lookup-value-item">
+                          <span>{value}</span>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-small"
+                            onClick={() => removeLookupValue(index)}
+                            disabled={createMutation.isPending || updateMutation.isPending}
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             <div className="form-actions">
-              <button type="submit" className="btn btn-primary">
-                {editingEntity ? 'Сохранить' : 'Создать'}
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {createMutation.isPending || updateMutation.isPending ? 'Сохранение...' : 
+                 editingEntity ? 'Сохранить' : 'Создать'}
               </button>
-              <button type="button" className="btn btn-secondary" onClick={handleCancel}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleCancel}
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
                 Отмена
               </button>
             </div>
           </form>
+          
+          {(createMutation.isError || updateMutation.isError) && (
+            <div className="error-message">
+              Ошибка при {editingEntity ? 'обновлении' : 'создании'} сущности. 
+              Убедитесь, что бэкенд запущен.
+            </div>
+          )}
         </div>
       )}
 
@@ -194,6 +305,19 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
                 {entity.regex_pattern && (
                   <p className="entity-regex">Паттерн: {entity.regex_pattern}</p>
                 )}
+                {entity.lookup_values && entity.lookup_values.length > 0 && (
+                  <div className="entity-lookup-values">
+                    <h5>Возможные значения:</h5>
+                    <ul>
+                      {entity.lookup_values.slice(0, 5).map((value, index) => (
+                        <li key={index}>{value}</li>
+                      ))}
+                      {entity.lookup_values.length > 5 && (
+                        <li>... и еще {entity.lookup_values.length - 5}</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
                 <div className="entity-actions">
                   <button 
                     className="btn btn-secondary btn-small"
@@ -204,6 +328,7 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
                   <button 
                     className="btn btn-danger btn-small"
                     onClick={() => handleDelete(entity.id, entity.name)}
+                    disabled={deleteMutation.isPending}
                   >
                     Удалить
                   </button>
@@ -222,5 +347,3 @@ const EntityManagement: React.FC<EntityManagementProps> = ({ agentId }) => {
 };
 
 export default EntityManagement;
-
-export {};

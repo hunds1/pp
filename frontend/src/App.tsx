@@ -42,7 +42,7 @@ function App() {
                   </>
                 } />
                 <Route path="/agent/:id" element={<AgentDashboard />} />
-                <Route path="/create-entity" element={<CreateEntityForm />} />
+                <Route path="/create-entity" element={<CreateEntityForm agentId={1} onBack={() => window.history.back()} />} />
               </Routes>
             </div>
           </main>

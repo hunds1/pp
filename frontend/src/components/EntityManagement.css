@@ -116,6 +116,30 @@
   margin-bottom: 1rem;
 }
 
+.entity-lookup-values {
+  background: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.entity-lookup-values h5 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 0.875rem;
+}
+
+.entity-lookup-values ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.entity-lookup-values li {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
 .entity-actions {
   display: flex;
   gap: 0.5rem;
