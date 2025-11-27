@@ -5,6 +5,7 @@ import { agentAPI, Agent, AgentCreate, AgentType, AgentStatus } from '../service
 import ChatInterface from '../components/ChatInterface';
 import EntityManagement from '../components/EntityManagement';
 import IntentManagement from '../components/IntentManagement';
+import DialogEditor from '../components/DialogEditor';
 import './AgentDashboard.css';
 
 const AgentDashboard: React.FC = () => {
@@ -238,8 +239,7 @@ const AgentDashboard: React.FC = () => {
         
         {activeTab === 'dialogs' && (
           <div className="dialogs-tab">
-            <h2>Диалоги</h2>
-            <p>Здесь будет визуальный конструктор диалогов</p>
+            <DialogEditor agentId={currentAgent.id} />
           </div>
         )}
         

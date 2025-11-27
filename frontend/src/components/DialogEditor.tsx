@@ -1,22 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { DialogNode, DialogConnection, dialogAPI, Agent } from '../services/api';
 import './DialogEditor.css';
 
-interface DialogEditorProps {
-  agentId: number;
-}
-
-interface DialogNode {
-  id: string;
-  type: 'intent' | 'action' | 'response' | 'condition' | 'redirect';
-  content: string;
-  position: { x: number; y: number };
-}
-
-interface DialogConnection {
-  id: string;
-  sourceId: string;
-  targetId: string;
-}
+interface DialogEditorProps {agentId: number;}
 
 const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
   const [nodes, setNodes] = useState<DialogNode[]>([
@@ -34,12 +20,19 @@ const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
+  const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
+  const [targetAgentId, setTargetAgentId] = useState<number | null>(null);
+
+  // Загрузка доступных агентов
+  useEffect(() => {
+    dialogAPI.getAvailableAgents().then(setAvailableAgents);
+  }, []);
 
   const addNode = (type: DialogNode['type']) => {
     const newNode: DialogNode = {
       id: `node-${Date.now()}`,
       type,
-      content: type === 'intent' ? 'Новый интент' : 
+      content: type === 'intent' ? 'Новый интент' :
                type === 'action' ? 'Новое действие' :
                type === 'response' ? 'Новый ответ' :
                type === 'condition' ? 'Новое условие' : 'Перенаправление',
@@ -47,6 +40,25 @@ const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
     };
     
     setNodes([...nodes, newNode]);
+  };
+  
+  const saveStory = () => {
+    // Создаем объект истории для сохранения
+    const story = {
+      id: 1, // В реальном приложении это будет генерироваться сервером
+      agentId,
+      name: "Новый сценарий",
+      nodes,
+      connections
+    };
+    
+    // Вызываем API для сохранения
+    dialogAPI.saveStory(agentId, story).then(() => {
+      alert('Сценарий успешно сохранен!');
+    }).catch((error) => {
+      console.error('Ошибка сохранения сценария:', error);
+      alert('Ошибка сохранения сценария');
+    });
   };
 
   const updateNodeContent = (id: string, content: string) => {
@@ -147,7 +159,7 @@ const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
           <button className="btn btn-secondary" onClick={() => addNode('redirect')}>
             Добавить перенаправление
           </button>
-          <button className="btn btn-success">
+          <button className="btn btn-success" onClick={saveStory}>
             Сохранить сценарий
           </button>
         </div>
@@ -303,11 +315,26 @@ const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
                 {node.type === 'redirect' && (
                   <div className="form-group">
                     <label>Целевой агент:</label>
-                    <select>
-                      <option>Выберите агента...</option>
-                      <option>Агент поддержки</option>
-                      <option>Агент продаж</option>
-                      <option>Агент техподдержки</option>
+                    <select
+                      value={node.targetAgentId || ''}
+                      onChange={(e) => {
+                        const targetId = e.target.value ? Number(e.target.value) : undefined;
+                        setNodes(nodes.map(n =>
+                          n.id === selectedNode
+                            ? { ...n, targetAgentId: targetId }
+                            : n
+                        ));
+                      }}
+                    >
+                      <option value="">Выберите агента...</option>
+                      {availableAgents
+                        .filter(a => a.id !== agentId) // Исключаем текущий агент
+                        .map(agent => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name}
+                          </option>
+                        ))
+                      }
                     </select>
                   </div>
                 )}

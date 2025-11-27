@@ -77,6 +77,12 @@ const MainChatInterface: React.FC = () => {
               >
                 Добавить сущность
               </button>
+              <button
+                className="btn btn-secondary btn-block"
+                onClick={() => navigate('/agent/1/dialogs')}
+              >
+                Диалоги
+              </button>
             </div>
             
             <div className="panel-section">

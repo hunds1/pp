@@ -82,6 +82,29 @@ export interface IntentCreate {
   examples: string[];
 }
 
+// Интерфейсы для диалогов
+export interface DialogNode {
+  id: string;
+  type: 'intent' | 'action' | 'response' | 'condition' | 'redirect';
+  content: string;
+  position: { x: number; y: number };
+  targetAgentId?: number; // Для узлов перенаправления
+}
+
+export interface DialogConnection {
+  id: string;
+  sourceId: string;
+  targetId: string;
+}
+
+export interface DialogStory {
+  id: number;
+  agentId: number;
+  name: string;
+  nodes: DialogNode[];
+  connections: DialogConnection[];
+}
+
 // Временные моковые данные
 let mockAgents: Agent[] = [
   {
@@ -167,6 +190,55 @@ export const agentAPI = {
     return api.delete(`/agents/${agentId}/intents/${intentId}`).then(() => {});
   },
 };
+
+// Функции для работы с диалогами
+export const dialogAPI = {
+  // Получение всех историй для агента
+  getStories: (agentId: number): Promise<DialogStory[]> => {
+    // Пока используем моковые данные
+    return Promise.resolve([
+      {
+        id: 1,
+        agentId: agentId,
+        name: "Основной сценарий",
+        nodes: [
+          {
+            id: "start",
+            type: "intent",
+            content: "Приветствие",
+            position: { x: 100, y: 100 }
+          },
+          {
+            id: "redirect-1",
+            type: "redirect",
+            content: "Перенаправление в поддержку",
+            position: { x: 300, y: 200 },
+            targetAgentId: 2
+          }
+        ],
+        connections: [
+          {
+            id: "conn-1",
+            sourceId: "start",
+            targetId: "redirect-1"
+          }
+        ]
+      }
+    ]);
+  },
+
+  // Сохранение истории
+  saveStory: (agentId: number, story: DialogStory): Promise<DialogStory> => {
+    // Пока просто возвращаем переданный объект
+    return Promise.resolve(story);
+  },
+
+  // Получение всех агентов для перенаправления
+  getAvailableAgents: (): Promise<Agent[]> => {
+    return api.get<Agent[]>('/agents').then(res => res.data);
+  }
+};
+
 // Функция для проверки состояния API
 export const healthCheck = (): Promise<{ status: string }> =>
   api.get('/health').then(res => res.data);
