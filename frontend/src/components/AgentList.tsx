@@ -1,18 +1,77 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { agentAPI } from '../services/api';
 import './AgentList.css';
 
 const AgentList: React.FC = () => {
-  const { 
-    data: agents, 
-    isLoading, 
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'status' | 'type'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  const queryClient = useQueryClient();
+  const {
+    data: agents,
+    isLoading,
     error,
-    refetch 
+    refetch
   } = useQuery({
     queryKey: ['agents'],
     queryFn: agentAPI.getAgents,
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: agentAPI.deleteAgent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+    },
+    onError: (error) => {
+      console.error('Ошибка удаления агента:', error);
+    }
+  });
+
+  // Фильтрация и сортировка агентов
+  const filteredAndSortedAgents = useMemo(() => {
+    if (!agents) return [];
+    
+    // Фильтрация
+    let filtered = agents.filter(agent =>
+      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    // Сортировка
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'status':
+          comparison = a.status.localeCompare(b.status);
+          break;
+        case 'type':
+          comparison = a.agent_type.localeCompare(b.agent_type);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    return filtered;
+  }, [agents, searchTerm, sortBy, sortOrder]);
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить агента "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const handleEdit = (id: number) => {
+    navigate(`/agent/${id}`);
+  };
 
   if (isLoading) return <div className="loading">Загрузка агентов...</div>;
   if (error) {
@@ -33,8 +92,42 @@ const AgentList: React.FC = () => {
         </button>
       </div>
       
+      {/* Панель фильтров и сортировки */}
+      <div className="filters-panel">
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Поиск по названию или описанию..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        
+        <div className="sort-controls">
+          <label htmlFor="sort-by">Сортировать по:</label>
+          <select
+            id="sort-by"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="sort-select"
+          >
+            <option value="name">Названию</option>
+            <option value="status">Статусу</option>
+            <option value="type">Типу</option>
+          </select>
+          
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="sort-order-btn"
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
+      </div>
+      
       <div className="agents-grid">
-        {agents?.map(agent => (
+        {filteredAndSortedAgents.map(agent => (
           <div key={agent.id} className="agent-card">
             <div className="agent-card-header">
               <h3>{agent.name}</h3>
@@ -47,14 +140,32 @@ const AgentList: React.FC = () => {
               <span className="agent-type">{agent.agent_type}</span>
               <div className="agent-actions">
                 <button className="btn btn-primary">Тестировать</button>
-                <button className="btn btn-secondary">Редактировать</button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleEdit(agent.id)}
+                >
+                  Редактировать
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(agent.id, agent.name)}
+                  disabled={deleteMutation.isPending}
+                >
+                  Удалить
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
       
-      {agents?.length === 0 && (
+      {filteredAndSortedAgents.length === 0 && searchTerm && (
+        <div className="empty-state">
+          <p>Агенты не найдены по вашему запросу.</p>
+        </div>
+      )}
+      
+      {agents?.length === 0 && !searchTerm && (
         <div className="empty-state">
           <p>Агентов пока нет. Создайте первого агента!</p>
         </div>

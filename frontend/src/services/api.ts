@@ -50,6 +50,36 @@ export interface MessageResponse {
   entities?: Array<{ entity: string; value: string; confidence: number }>;
 }
 
+// Интерфейсы для сущностей
+export interface Entity {
+  id: number;
+  name: string;
+  type: string;
+  description?: string;
+  regex_pattern?: string;
+}
+
+export interface EntityCreate {
+  name: string;
+  type: string;
+  description?: string;
+  regex_pattern?: string;
+}
+
+// Интерфейсы для интентов
+export interface Intent {
+  id: number;
+  name: string;
+  description?: string;
+  examples: string[];
+}
+
+export interface IntentCreate {
+  name: string;
+  description?: string;
+  examples: string[];
+}
+
 // Временные моковые данные
 let mockAgents: Agent[] = [
   {
@@ -69,7 +99,7 @@ let mockAgents: Agent[] = [
     agent_type: AgentType.FORM,
     status: AgentStatus.TRAINING,
     config_path: "/configs/form",
-    domain_path: "/domains/form", 
+    domain_path: "/domains/form",
     model_path: "/models/form"
   }
 ];
@@ -99,6 +129,40 @@ export const agentAPI = {
   
   sendMessage: (id: number, message: MessageRequest): Promise<MessageResponse> => {
     return api.post<MessageResponse>(`/agents/${id}/message`, message).then(res => res.data);
+  },
+  
+  // Функции для работы с сущностями
+  getEntities: (agentId: number): Promise<Entity[]> => {
+    return api.get<Entity[]>(`/agents/${agentId}/entities`).then(res => res.data);
+  },
+  
+  createEntity: (agentId: number, entityData: EntityCreate): Promise<Entity> => {
+    return api.post<Entity>(`/agents/${agentId}/entities`, entityData).then(res => res.data);
+  },
+  
+  updateEntity: (agentId: number, entityId: number, entityData: EntityCreate): Promise<Entity> => {
+    return api.put<Entity>(`/agents/${agentId}/entities/${entityId}`, entityData).then(res => res.data);
+  },
+  
+  deleteEntity: (agentId: number, entityId: number): Promise<void> => {
+    return api.delete(`/agents/${agentId}/entities/${entityId}`).then(() => {});
+  },
+  
+  // Функции для работы с интентами
+  getIntents: (agentId: number): Promise<Intent[]> => {
+    return api.get<Intent[]>(`/agents/${agentId}/intents`).then(res => res.data);
+  },
+  
+  createIntent: (agentId: number, intentData: IntentCreate): Promise<Intent> => {
+    return api.post<Intent>(`/agents/${agentId}/intents`, intentData).then(res => res.data);
+  },
+  
+  updateIntent: (agentId: number, intentId: number, intentData: IntentCreate): Promise<Intent> => {
+    return api.put<Intent>(`/agents/${agentId}/intents/${intentId}`, intentData).then(res => res.data);
+  },
+  
+  deleteIntent: (agentId: number, intentId: number): Promise<void> => {
+    return api.delete(`/agents/${agentId}/intents/${intentId}`).then(() => {});
   },
 };
 // Функция для проверки состояния API

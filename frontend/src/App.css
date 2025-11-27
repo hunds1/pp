@@ -20,6 +20,23 @@
   color: #666;
 }
 
+.app-nav {
+  margin-top: 1rem;
+}
+
+.app-nav a {
+  color: #007bff;
+  text-decoration: none;
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.app-nav a:hover {
+  background-color: #e9ecef;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
