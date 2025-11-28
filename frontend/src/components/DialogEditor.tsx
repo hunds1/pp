@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DialogNode, DialogConnection, dialogAPI, Agent } from '../services/api';
-import './DialogEditor.css';
+import './css/DialogEditor.css';
 
 interface DialogEditorProps {agentId: number;}
 

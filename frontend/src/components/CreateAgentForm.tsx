@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentAPI, AgentType } from '../services/api';
-import './CreateAgentForm.css';
+import './css/CreateAgentForm.css';
 
 const CreateAgentForm: React.FC = () => {
   const [name, setName] = useState('');

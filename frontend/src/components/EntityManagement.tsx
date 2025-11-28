@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Entity, EntityCreate, agentAPI } from '../services/api';
-import './EntityManagement.css';
+import './css/EntityManagement.css';
 
 interface EntityManagementProps {
   agentId: number;

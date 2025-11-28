@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { EntityCreate, agentAPI } from '../services/api';
-import './CreateEntityForm.css';
+import './css/CreateEntityForm.css';
 
 interface CreateEntityFormProps {
   agentId: number;
@@ -28,8 +28,14 @@ const CreateEntityForm: React.FC<CreateEntityFormProps> = ({ agentId, onBack }) 
       setRegexPattern('');
       setDescription('');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Ошибка создания сущности:', error);
+      // Проверка на корректность regex
+      if (error.response?.status === 400 && type === 'regex') {
+        alert('Некорректный паттерн регулярного выражения. Пожалуйста, проверьте синтаксис.');
+      } else {
+        alert('Ошибка при создании сущности. Пожалуйста, попробуйте еще раз.');
+      }
     }
   });
   
@@ -86,7 +92,7 @@ const CreateEntityForm: React.FC<CreateEntityFormProps> = ({ agentId, onBack }) 
     <div className="create-entity-form">
       <div className="form-header">
         <h2>Создать новую сущность</h2>
-        <button 
+        <button
           className="btn btn-secondary"
           onClick={onBack}
         >
@@ -186,15 +192,15 @@ const CreateEntityForm: React.FC<CreateEntityFormProps> = ({ agentId, onBack }) 
         </div>
         
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? 'Создание...' : 'Создать сущность'}
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn btn-secondary"
             onClick={onBack}
             disabled={mutation.isPending}

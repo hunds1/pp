@@ -6,7 +6,7 @@ import ChatInterface from '../components/ChatInterface';
 import EntityManagement from '../components/EntityManagement';
 import IntentManagement from '../components/IntentManagement';
 import DialogEditor from '../components/DialogEditor';
-import './AgentDashboard.css';
+import './css/AgentDashboard.css';
 
 const AgentDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();

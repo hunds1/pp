@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Intent, IntentCreate } from '../services/api';
-import './IntentManagement.css';
+import './css/IntentManagement.css';
 
 interface IntentManagementProps {
   agentId: number;

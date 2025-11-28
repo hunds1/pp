@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageResponse } from '../services/api';
-import './ChatInterface.css';
+import './css/ChatInterface.css';
 
 interface ChatMessage {
   id: number;

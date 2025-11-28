@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import IntentManagement from './IntentManagement';
 import EntityManagement from './EntityManagement';
 import { Agent } from '../services/api';
-import './NLUEditor.css';
+import './css/NLUEditor.css';
 
 interface NLUEditorProps {
   agent: Agent;
