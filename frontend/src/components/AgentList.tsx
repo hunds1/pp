@@ -4,6 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { agentAPI } from '../services/api';
 import './css/AgentList.css';
 
+/**
+ * Компонент для отображения списка агентов
+ * Позволяет пользователю просматривать, фильтровать, сортировать и управлять агентами
+ * Поддерживает функции создания, редактирования и удаления агентов
+ */
 const AgentList: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');

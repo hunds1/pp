@@ -4,6 +4,11 @@ import EntityManagement from './EntityManagement';
 import { Agent } from '../services/api';
 import './css/NLUEditor.css';
 
+/**
+ * Редактор NLU (Natural Language Understanding) моделей
+ * Позволяет управлять интентами и сущностями агента
+ * Содержит две вкладки: управление интентами и управление сущностями
+ */
 interface NLUEditorProps {
   agent: Agent;
   onSave: () => void;

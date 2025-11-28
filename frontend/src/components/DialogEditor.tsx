@@ -4,6 +4,12 @@ import './css/DialogEditor.css';
 
 interface DialogEditorProps {agentId: number;}
 
+/**
+ * Редактор диалоговых сценариев
+ * Визуальный конструктор для создания и редактирования диалоговых сценариев агента
+ * Позволяет создавать узлы разных типов (интенты, действия, ответы, условия, перенаправления)
+ * и соединять их между собой для формирования логики диалога
+ */
 const DialogEditor: React.FC<DialogEditorProps> = ({ agentId }) => {
   const [nodes, setNodes] = useState<DialogNode[]>([
     {

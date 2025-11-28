@@ -3,6 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentAPI, AgentType } from '../services/api';
 import './css/CreateAgentForm.css';
 
+/**
+ * Форма для создания новых агентов
+ * Позволяет пользователю создать нового агента с указанием названия, описания и типа
+ * Использует React Query для управления состоянием загрузки и ошибок при создании агента
+ */
 const CreateAgentForm: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

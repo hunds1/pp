@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Entity, EntityCreate, agentAPI } from '../services/api';
 import './css/EntityManagement.css';
 
+/**
+ * Управление сущностями агента
+ * Позволяет создавать, редактировать и удалять сущности агента
+ * Сущности представляют собой важные данные, извлекаемые из сообщений пользователей
+ * Поддерживаются два типа сущностей: lookup (список значений) и regex (регулярное выражение)
+ */
 interface EntityManagementProps {
   agentId: number;
 }

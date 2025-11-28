@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Intent, IntentCreate } from '../services/api';
 import './css/IntentManagement.css';
 
+/**
+ * Управление интентами агента
+ * Позволяет создавать, редактировать и удалять интенты агента
+ * Интенты представляют собой категории намерений пользователей
+ * Каждый интент должен содержать минимум 3 примера фраз
+ */
 interface IntentManagementProps {
   agentId: number;
 }

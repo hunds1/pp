@@ -1,11 +1,12 @@
 .main-chat-interface {
   display: flex;
   height: calc(100vh - 120px);
-  margin: 20px;
+  width: 100%;
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
   background: white;
+  box-sizing: border-box;
 }
 
 /* Left Panel */
@@ -16,6 +17,7 @@
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .left-panel.collapsed {
@@ -117,6 +119,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid #ddd;
+  min-width: 0; /* Allow flex item to shrink below content size */
 }
 
 .chat-header {
@@ -221,6 +224,7 @@
   display: flex;
   flex-direction: column;
   background: #f8f9fa;
+  flex-shrink: 0;
 }
 
 .diagnostic-panel .panel-header {

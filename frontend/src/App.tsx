@@ -28,19 +28,31 @@ function App() {
             <p>Создание и тестирование AI агентов</p>
           </header>
           <main className="app-main">
-            <div className="container">
-              <Routes>
-                <Route path="/" element={<MainChatInterface />} />
-                <Route path="/agents" element={
+            <Routes>
+              <Route path="/" element={
+                <div className="full-width-container">
+                  <MainChatInterface />
+                </div>
+              } />
+              <Route path="/agents" element={
+                <div className="container">
                   <>
                     <CreateAgentForm />
                     <AgentList />
                   </>
-                } />
-                <Route path="/agent/:id" element={<AgentDashboard />} />
-                <Route path="/create-entity" element={<CreateEntityForm agentId={1} onBack={() => window.history.back()} />} />
-              </Routes>
-            </div>
+                </div>
+              } />
+              <Route path="/agent/:id" element={
+                <div className="container">
+                  <AgentDashboard />
+                </div>
+              } />
+              <Route path="/create-entity" element={
+                <div className="container">
+                  <CreateEntityForm agentId={1} onBack={() => window.history.back()} />
+                </div>
+              } />
+            </Routes>
           </main>
         </div>
         <ReactQueryDevtools initialIsOpen={false} />

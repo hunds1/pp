@@ -2,6 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageResponse } from '../services/api';
 import './css/ChatInterface.css';
 
+/**
+ * Интерфейс чата для общения с агентом
+ * Отображает историю сообщений, позволяет отправлять новые сообщения
+ * и показывает диагностическую информацию об обработке сообщений
+ */
 interface ChatMessage {
   id: number;
   text: string;
