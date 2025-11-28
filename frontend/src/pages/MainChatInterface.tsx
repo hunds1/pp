@@ -5,15 +5,30 @@ import { agentAPI, Agent } from '../services/api';
 import CreateAgentForm from '../components/CreateAgentForm';
 import './css/MainChatInterface.css';
 
+/**
+ * Главный интерфейс чата с агентами
+ * Отображает список агентов, позволяет создавать новых агентов,
+ * вести диалог с выбранным агентом и показывает диагностическую информацию
+ */
 const MainChatInterface: React.FC = () => {
   const navigate = useNavigate();
+  
+  // Состояние для управления видимостью левой панели
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  
+  // Выбранный агент для общения
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  
+  // Список сообщений в чате
   const [messages, setMessages] = useState([
     { id: 1, text: 'Привет! Я ваш чат-бот. Как я могу вам помочь?', sender: 'bot' },
     { id: 2, text: 'Здравствуйте! Я хотел бы узнать больше о ваших услугах.', sender: 'user' }
   ]);
+  
+  // Текст в поле ввода сообщения
   const [inputValue, setInputValue] = useState('');
+  
+  // Диагностические данные для отображения
   const [diagnosticData, setDiagnosticData] = useState({
     intent: 'greeting',
     confidence: 0.95,
@@ -22,25 +37,34 @@ const MainChatInterface: React.FC = () => {
     ]
   });
 
-  // Получение списка агентов
+  // Получение списка агентов с помощью React Query
   const { data: agents, isLoading, error } = useQuery({
     queryKey: ['agents'],
     queryFn: agentAPI.getAgents,
   });
 
+  /**
+   * Отправка сообщения в чат
+   * Добавляет сообщение пользователя в список и симулирует ответ бота
+   */
   const handleSendMessage = () => {
+    // Проверяем, что сообщение не пустое
     if (inputValue.trim() === '') return;
     
+    // Создаем новое сообщение от пользователя
     const newMessage = {
       id: messages.length + 1,
       text: inputValue,
       sender: 'user' as 'user' | 'bot'
     };
     
+    // Добавляем сообщение в список
     setMessages([...messages, newMessage]);
+    
+    // Очищаем поле ввода
     setInputValue('');
     
-    // Simulate bot response
+    // Симуляция ответа бота с задержкой
     setTimeout(() => {
       const botResponse = {
         id: messages.length + 2,
@@ -51,6 +75,10 @@ const MainChatInterface: React.FC = () => {
     }, 1000);
   };
 
+  /**
+   * Обработчик нажатия клавиш в поле ввода
+   * Отправляет сообщение при нажатии Enter (без Shift)
+   */
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -58,17 +86,25 @@ const MainChatInterface: React.FC = () => {
     }
   };
 
+  /**
+   * Выбор агента для общения
+   * @param agent - выбранный агент
+   */
   const handleSelectAgent = (agent: Agent) => {
     setSelectedAgent(agent);
   };
 
+  /**
+   * Обработчик успешного создания агента
+   * Список агентов обновится автоматически благодаря React Query
+   */
   const handleCreateAgentSuccess = () => {
     // Обновление списка агентов произойдет автоматически благодаря useQuery
   };
 
   return (
     <div className="main-chat-interface">
-      {/* Left Panel */}
+      {/* Левая панель управления */}
       <div className={`left-panel ${isLeftPanelOpen ? 'open' : 'collapsed'}`}>
         <div className="panel-header">
           <h2>Управление</h2>
@@ -161,7 +197,7 @@ const MainChatInterface: React.FC = () => {
         )}
       </div>
       
-      {/* Main Chat Area */}
+      {/* Основная область чата */}
       <div className="chat-area">
         <div className="chat-header">
           <h2>{selectedAgent ? `Чат с ${selectedAgent.name}` : 'Выберите агента для начала общения'}</h2>
@@ -203,7 +239,7 @@ const MainChatInterface: React.FC = () => {
         )}
       </div>
       
-      {/* Diagnostic Panel */}
+      {/* Панель диагностики */}
       <div className="diagnostic-panel">
         <div className="panel-header">
           <h2>Диагностика</h2>

@@ -26,10 +26,6 @@ function App() {
           <header className="app-header">
             <h1>Лабораторный комплекс чат-ботов</h1>
             <p>Создание и тестирование AI агентов</p>
-            <nav className="app-nav">
-              <a href="/">Главная</a>
-              <a href="/agents">Управление агентами</a>
-            </nav>
           </header>
           <main className="app-main">
             <div className="container">
