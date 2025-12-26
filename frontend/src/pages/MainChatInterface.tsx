@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { agentAPI, Agent } from '../services/api';
 import CreateAgentForm from '../components/CreateAgentForm';
+import CreateEntityFormSimple from '../components/CreateEntityFormSimple';
+
 import './css/MainChatInterface.css';
 
 /**
@@ -23,6 +25,10 @@ const MainChatInterface: React.FC = () => {
   
   // Выбранный агент для общения
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  
+  // Состояние для управления отображением форм
+  const [showCreateAgentForm, setShowCreateAgentForm] = useState(false);
+  const [showCreateEntityForm, setShowCreateEntityForm] = useState(false);
   
   // Список сообщений в чате
   const [messages, setMessages] = useState([
@@ -127,7 +133,42 @@ const MainChatInterface: React.FC = () => {
               <>
                 <div className="panel-section">
                   <h3>Создать агента</h3>
-                  <CreateAgentForm />
+                  {!showCreateAgentForm && !showCreateEntityForm && (
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setShowCreateAgentForm(true)}
+                      >
+                        Создать агента
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowCreateEntityForm(true)}
+                      >
+                        Создать сущность
+                      </button>
+                    </>
+                  )}
+                  
+                  {showCreateAgentForm && (
+                    <CreateAgentForm />
+                  )}
+                  
+                  {showCreateEntityForm && (
+                    <CreateEntityFormSimple />
+                  )}
+                  
+                  {(showCreateAgentForm || showCreateEntityForm) && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setShowCreateAgentForm(false);
+                        setShowCreateEntityForm(false);
+                      }}
+                    >
+                      Назад к списку
+                    </button>
+                  )}
                 </div>
                 
                 <div className="panel-section">
