@@ -115,6 +115,56 @@ const MainChatInterface: React.FC = () => {
 
   return (
     <div className="main-chat-interface">
+      {/* Модальное окно для формы создания агента */}
+      {showCreateAgentForm && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCreateAgentForm(false);
+            }
+          }}
+        >
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Создать нового агента</h2>
+              <button
+                className="close-button"
+                onClick={() => setShowCreateAgentForm(false)}
+              >
+                ×
+              </button>
+            </div>
+            <CreateAgentForm />
+          </div>
+        </div>
+      )}
+      
+      {/* Модальное окно для формы создания сущности */}
+      {showCreateEntityForm && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCreateEntityForm(false);
+            }
+          }}
+        >
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Создать новую сущность</h2>
+              <button
+                className="close-button"
+                onClick={() => setShowCreateEntityForm(false)}
+              >
+                ×
+              </button>
+            </div>
+            <CreateEntityFormSimple />
+          </div>
+        </div>
+      )}
+      
       {/* Левая панель управления */}
       <div className={`left-panel ${isLeftPanelOpen ? 'open' : 'collapsed'}`}>
         <div className="panel-header">
@@ -132,43 +182,19 @@ const MainChatInterface: React.FC = () => {
             {!selectedAgent ? (
               <>
                 <div className="panel-section">
-                  <h3>Создать агента</h3>
-                  {!showCreateAgentForm && !showCreateEntityForm && (
-                    <>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setShowCreateAgentForm(true)}
-                      >
-                        Создать агента
-                      </button>
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => setShowCreateEntityForm(true)}
-                      >
-                        Создать сущность
-                      </button>
-                    </>
-                  )}
-                  
-                  {showCreateAgentForm && (
-                    <CreateAgentForm />
-                  )}
-                  
-                  {showCreateEntityForm && (
-                    <CreateEntityFormSimple />
-                  )}
-                  
-                  {(showCreateAgentForm || showCreateEntityForm) && (
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => {
-                        setShowCreateAgentForm(false);
-                        setShowCreateEntityForm(false);
-                      }}
-                    >
-                      Назад к списку
-                    </button>
-                  )}
+                  <h3>Действия</h3>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowCreateAgentForm(true)}
+                  >
+                    Создать агента
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowCreateEntityForm(true)}
+                  >
+                    Создать сущность
+                  </button>
                 </div>
                 
                 <div className="panel-section">
